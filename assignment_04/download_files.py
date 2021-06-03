@@ -8,10 +8,10 @@ from fastai.vision.all import *
 from nbdev.showdoc import *
 import requests
 
-FOLDER='robots'
-BASE_NAME='robot'
-SEARCH_WORD='robot'
-N_IMAGES=10
+FOLDER='dataset/persons'
+BASE_NAME='person'
+SEARCH_WORD='person'
+N_IMAGES=200
 
 def search_images_ddg(key,max_n=200):
      """Search for 'key' with DuckDuckGo and return a unique urls of 'max_n' images
@@ -48,6 +48,10 @@ for i, url in enumerate(urls):
     r = requests.get(url)
 
     file_extension = url.split('?')[0].split('.')[-1]
+
+    if file_extension.__contains__('/'):
+        # skip this file
+        continue
 
     filename = f'{FOLDER}/{BASE_NAME}{i}.{file_extension}'
 
