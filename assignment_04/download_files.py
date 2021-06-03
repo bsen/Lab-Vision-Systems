@@ -8,10 +8,10 @@ from fastai.vision.all import *
 from nbdev.showdoc import *
 import requests
 
-FOLDER='dataset/persons'
-BASE_NAME='person'
-SEARCH_WORD='person'
-N_IMAGES=200
+FOLDER='dataset/robot_new'
+BASE_NAME='robot_new'
+SEARCH_WORD='robot'
+MAX_IMAGES=90 # the maximum amount of images
 
 def search_images_ddg(key,max_n=200):
      """Search for 'key' with DuckDuckGo and return a unique urls of 'max_n' images
@@ -39,22 +39,25 @@ def search_images_ddg(key,max_n=200):
          except:
              pass
 
-urls = search_images_ddg(SEARCH_WORD, max_n=N_IMAGES)
+urls = search_images_ddg(SEARCH_WORD, max_n=MAX_IMAGES)
 
 print(len(urls), urls[0])
 
 for i, url in enumerate(urls):
-    print(f'Downloading {url}')
-    r = requests.get(url)
+    try:
+        print(f'Downloading {url}')
+        r = requests.get(url)
 
-    file_extension = url.split('?')[0].split('.')[-1]
+        file_extension = url.split('?')[0].split('.')[-1]
 
-    if file_extension.__contains__('/'):
-        # skip this file
-        continue
+        if file_extension.__contains__('/'):
+            # skip this file
+            continue
 
-    filename = f'{FOLDER}/{BASE_NAME}{i}.{file_extension}'
+        filename = f'{FOLDER}/{BASE_NAME}{i}.{file_extension}'
 
-    with open(filename, 'wb') as file:
-        file.write(r.content)
+        with open(filename, 'wb') as file:
+            file.write(r.content)
+    except Exception as e:
+        print(f"A {type(e)}-Error occured while trying to download {url}")
 
