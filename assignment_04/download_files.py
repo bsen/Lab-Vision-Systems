@@ -5,13 +5,12 @@
 # is from https://github.com/fastai/fastbook/blob/master/utils.py
 
 from fastai.vision.all import *
-from nbdev.showdoc import *
 import requests
 
 FOLDER='dataset/robot_new'
-BASE_NAME='robot_new'
+BASE_NAME='robot'
 SEARCH_WORD='robot'
-MAX_IMAGES=90 # the maximum amount of images
+MAX_IMAGES=120 # the maximum amount of images
 
 def search_images_ddg(key,max_n=200):
      """Search for 'key' with DuckDuckGo and return a unique urls of 'max_n' images
