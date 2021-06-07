@@ -3,8 +3,9 @@ import torchvision.transforms as transforms
 from PIL import Image
 from tqdm import tqdm
 
-N_OFFLINE_AUGMENTATIONS = 5
-    
+N_OFFLINE_AUGMENTATIONS = 6 # the number of offline data-augmentations + 1
+                            # for no augmentation
+
 onlineAugmentations = [
     lambda x: x, # the identity transformation
     transforms.Compose([transforms.CenterCrop(size=(200,200)),
@@ -16,18 +17,18 @@ onlineAugmentations = [
 ]
 
 class PersonRobotDataset(torch.utils.data.Dataset):
-    """A dataset of 120 photographs of persons and 120 
+    """A dataset of 120 photographs of persons and 120
     photographs of humandoid robots.
-    Data augmentations are used to increase 
+    Data augmentations are used to increase
     the number of samples.
     """
-    
+
     def __init__(self, train_val_test):
-        """The value of train_val_test should be set to 
+        """The value of train_val_test should be set to
         0 to get the training dataset,
         1 to get the validation data set or
         2 to get the test data set."""
-        
+
         possible_indeces = [42,  74,  84,  12, 113,  29,  55,  18, 105,  69,  34,  87,   5,
                             85,  58,   3,   9,  65, 111,  15,  76, 100,  52,  79, 114,  75,
                            102,  51,  43,  20,  94,  57,  16,  60, 104,  37, 119,  92, 103,
@@ -38,7 +39,7 @@ class PersonRobotDataset(torch.utils.data.Dataset):
                             63, 116,  67,  48,   1,  78,  50,  97,  64,   6,  91, 106,  77,
                             21,  62,  70, 117,  26,  13,  24,  99,  95,  86,   7, 115,   4,
                            112,  49,  98] # a random permutation of range(1, 121)
-        
+
         if train_val_test == 0:
             # set indeces to be 78 from 120 possible indeces (65%)
             self.indeces = possible_indeces[:78]
@@ -48,35 +49,35 @@ class PersonRobotDataset(torch.utils.data.Dataset):
         elif train_val_test == 2:
             # set indeces to be 24 from 120 possible indeces (20%)
             self.indeces = possible_indeces[96:]
-        
-        datasets_shape = (len(self.indeces,), N_OFFLINE_AUGMENTATIONS+1, 
+
+        datasets_shape = (len(self.indeces,), N_OFFLINE_AUGMENTATIONS,
                          3, 256, 256)
-        
+
         self.persons= torch.zeros(datasets_shape)
         self.robots = torch.zeros(datasets_shape)
-        compose = transforms.Compose([transforms.ToTensor(), 
+        compose = transforms.Compose([transforms.ToTensor(),
                                         transforms.Resize((256, 256))])
         transform = lambda x: compose(x)[:3] #.movedim((0,1,2), (2,0,1))
-        
+
         progress_bar = tqdm(enumerate(self.indeces), total=len(self.indeces))
-        
+
         for data_index, picture_index in progress_bar:
             img = Image.open(f'dataset/person/person{picture_index}.png')
             self.persons[data_index, 0] = transform(img)
-            
+
             img = Image.open(f'dataset/robot/robot{picture_index}.png')
             self.robots[data_index, 0] = transform(img)
-            
-            for aug in range(1, N_OFFLINE_AUGMENTATIONS+1):
+
+            for aug in range(1, N_OFFLINE_AUGMENTATIONS):
                 for label in ['person', 'robot']:
                     file_name = f"dataset/{label}/{label}{picture_index}_aug{aug}.png"
                     img = Image.open(file_name)
-                    
+
                     if label == 'person':
                         self.persons[data_index, aug] = transform(img)
                     else:
                         self.robots[data_index, aug] = transform(img)
-  
+
     def __getitem__(self, idx):
         # determine whether we use a person or robot picture
         if idx%2 == 0:
@@ -86,22 +87,22 @@ class PersonRobotDataset(torch.utils.data.Dataset):
             dataset = self.robots
             label = 1.0
         idx = idx//2
-        
+
         # determine the online augmentation we should use
         n_online_augment = len(onlineAugmentations)
         online_augment = onlineAugmentations[idx%n_online_augment]
         idx = idx//n_online_augment
-        
+
         # determine the offline augmenation we should use
         offline_augment = idx%N_OFFLINE_AUGMENTATIONS
-        
+
         idx = idx//N_OFFLINE_AUGMENTATIONS
-    
+
         # determine the image id
         image_id = idx
-        
+
         return online_augment(dataset[image_id, offline_augment]), label
-    
+
     def __len__(self):
         return len(self.indeces) * N_OFFLINE_AUGMENTATIONS \
                * len(onlineAugmentations) * 2
