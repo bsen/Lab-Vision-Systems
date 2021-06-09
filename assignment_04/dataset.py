@@ -2,10 +2,14 @@ import torch
 import torchvision.transforms as transforms
 from PIL import Image
 from tqdm import tqdm
+import os.path
+from my_utils import device
 
 N_OFFLINE_AUGMENTATIONS = 6 # the number of offline data-augmentations + 1
-                            # for no augmentation
+                            # (for no augmentation)
 
+BATCH_SIZE = 20
+    
 onlineAugmentations = [
     lambda x: x, # the identity transformation
     transforms.Compose([transforms.CenterCrop(size=(200,200)),
@@ -29,6 +33,15 @@ class PersonRobotDataset(torch.utils.data.Dataset):
         1 to get the validation data set or
         2 to get the test data set."""
 
+        if int(train_val_test) == 0:
+            set_type = 'train'
+        elif int(train_val_test) == 1:
+            set_type = 'val'
+        elif int(train_val_test) == 2:
+            set_type = 'test'
+        else:
+            raise ValueError(f"train_val_test must be 0,1 or 2 but equals {train_val_test}")
+        
         possible_indeces = [42,  74,  84,  12, 113,  29,  55,  18, 105,  69,  34,  87,   5,
                             85,  58,   3,   9,  65, 111,  15,  76, 100,  52,  79, 114,  75,
                            102,  51,  43,  20,  94,  57,  16,  60, 104,  37, 119,  92, 103,
@@ -49,12 +62,16 @@ class PersonRobotDataset(torch.utils.data.Dataset):
         elif train_val_test == 2:
             # set indeces to be 24 from 120 possible indeces (20%)
             self.indeces = possible_indeces[96:]
+            
+        dataset_file = f"dataset/processed_dataset_{set_type}.pt"
+        if os.path.exists(dataset_file):
+            self.robots, self.persons = torch.load(dataset_file, map_location=device)
+            return
 
         datasets_shape = (len(self.indeces,), N_OFFLINE_AUGMENTATIONS,
                          3, 256, 256)
-
-        self.persons= torch.zeros(datasets_shape)
-        self.robots = torch.zeros(datasets_shape)
+        self.persons= torch.zeros(datasets_shape).to(device)
+        self.robots = torch.zeros(datasets_shape).to(device)
         compose = transforms.Compose([transforms.ToTensor(),
                                         transforms.Resize((256, 256))])
         transform = lambda x: compose(x)[:3] #.movedim((0,1,2), (2,0,1))
@@ -77,6 +94,8 @@ class PersonRobotDataset(torch.utils.data.Dataset):
                         self.persons[data_index, aug] = transform(img)
                     else:
                         self.robots[data_index, aug] = transform(img)
+        
+        torch.save((self.persons, self.robots), dataset_file)
 
     def __getitem__(self, idx):
         # determine whether we use a person or robot picture
@@ -106,3 +125,14 @@ class PersonRobotDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.indeces) * N_OFFLINE_AUGMENTATIONS \
                * len(onlineAugmentations) * 2
+
+
+# the data loaders
+train_loader = torch.utils.data.DataLoader(dataset=PersonRobotDataset(0), batch_size=BATCH_SIZE, 
+                                           shuffle=True)
+
+val_loader = torch.utils.data.DataLoader(dataset=PersonRobotDataset(1), batch_size=BATCH_SIZE, 
+                                         shuffle=True)
+
+test_loader = torch.utils.data.DataLoader(dataset=PersonRobotDataset(2), batch_size=BATCH_SIZE, 
+                                          shuffle=True)
