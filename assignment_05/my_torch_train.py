@@ -1,3 +1,7 @@
+"""
+Some functions we often use for training and therefore put in a module.
+"""
+
 from tqdm import tqdm
 import numpy as np
 import torch
@@ -63,7 +67,7 @@ def eval_model(model, eval_loader, criterion, device):
     return accuracy, loss
 
 
-def train_model(model, optimizer, scheduler, criterion, train_loader, valid_loader, 
+def train_model(model, optimizer, scheduler, criterion, train_loader, valid_loader,
                 num_epochs, save_path=None):
     """ Training a model for a given number of epochs"""
 
@@ -100,7 +104,7 @@ def train_model(model, optimizer, scheduler, criterion, train_loader, valid_load
         print("\n")
 
     print(f"Training completed")
-    
+
     if save_path != None:
         path = base_path + save_path
         torch.save(
@@ -112,19 +116,5 @@ def train_model(model, optimizer, scheduler, criterion, train_loader, valid_load
                 'valid_acc': valid_acc
             },
             f=path)
-        
+
     return train_loss, val_loss, loss_iters, valid_acc
-
-
-def smooth(f, K=5):
-    """ Smoothing a function using a low-pass filter (mean) of size K """
-    kernel = np.ones(K) / K
-    f = np.concatenate([f[:int(K//2)], f, f[int(-K//2):]])  # to account for boundaries
-    smooth_f = np.convolve(f, kernel, mode="same")
-    smooth_f = smooth_f[K//2: -K//2]  # removing boundary-fixes
-    return smooth_f
-
-def count_model_params(model):
-    """ Counting the number of learnable parameters in a nn.Module """
-    num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    return num_params
