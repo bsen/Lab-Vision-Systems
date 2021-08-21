@@ -14997,9 +14997,9 @@ a.anchor-link {
 
 
 
-<div id="0f1735ec-b274-47bc-92c3-985057ad2ffd" class="jupyter-widgets jp-OutputArea-output ">
+<div id="0841ea44-4aed-44a2-b6fc-4231bbbcab62" class="jupyter-widgets jp-OutputArea-output ">
 <script type="text/javascript">
-var element = document.getElementById('0f1735ec-b274-47bc-92c3-985057ad2ffd');
+var element = document.getElementById('0841ea44-4aed-44a2-b6fc-4231bbbcab62');
 </script>
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id": "3c96cd0d326a463296308841b83958b0", "version_major": 2, "version_minor": 0}
@@ -15156,9 +15156,9 @@ Valid loss @ epoch 19: Loss=0.006500822286831126
 
 
 
-<div id="f85a7e13-e6f2-42ba-aed8-ce60e6fdaf22" class="jupyter-widgets jp-OutputArea-output ">
+<div id="b6148992-c90b-42f3-a16f-70c5ec8bda8f" class="jupyter-widgets jp-OutputArea-output ">
 <script type="text/javascript">
-var element = document.getElementById('f85a7e13-e6f2-42ba-aed8-ce60e6fdaf22');
+var element = document.getElementById('b6148992-c90b-42f3-a16f-70c5ec8bda8f');
 </script>
 <script type="application/vnd.jupyter.widget-view+json">
 {"model_id": "438a732214244c6084a954deab4baba2", "version_major": 2, "version_minor": 0}
@@ -15693,6 +15693,14 @@ Clustering embeddings with resnet backbone achieves ARI=19.06%
 
 </div>
 
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="Comment">Comment<a class="anchor-link" href="#Comment">&#182;</a></h3><p>The TriNet Siamese model which has Resnet backbone performs better because the feature extractor is already trained and we are fine-tuning the model in our 20 epochs, while the TriNet Siamese model initialized with random weights needs much more epochs to converge because we are training the whole network from scratch. We can also see this from the graphs from the training and validation processes.</p>
+<p>The dataset has 9269 training classes, 2648 validation classes and 1325 classes. This fact might be a reason why the training is not as successful as the training presented on MNIST Fashion dataset which has 10 classes.</p>
+<p>Nevertheless, the tools for visualizing the test embeddings (PCA and TSNE) show us that the model has learned. For making clearer scatter plot, we only show the embeddings from classes that have more than 5 images in the test set.</p>
+
+</div>
 </div>
 </body>
 
